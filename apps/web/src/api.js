@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8000';
 
 /**
  * Analyze a password via the FastAPI backend.
