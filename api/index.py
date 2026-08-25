@@ -1,21 +1,37 @@
+"""
+Pass-X-Analyzer — Unified FastAPI Server & Vercel Serverless Entrypoint
+
+Stateless API wrapping the core password analysis package.
+Every request is independent; no state is held between calls.
+"""
+
 from __future__ import annotations
 
 import sys
 import os
+from dataclasses import asdict
+from typing import Optional
 
-# Ensure the root directory is on sys.path so packages.core and apps.server can be resolved
+# Ensure project root is in sys.path
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apps.server.main import app as passx_app
+from pydantic import BaseModel, Field
 
-# Vercel serverless entrypoint
-app = FastAPI(title="Pass-X-Analyzer API", version="1.0.0")
+from packages.core.analyzer import analyze
+from packages.core.generator import generate_password
+from packages.core.models import GeneratorOptions
 
-# Allow CORS for all origins in production
+app = FastAPI(
+    title="Pass-X-Analyzer API",
+    description="Stateless password strength analysis and generation service.",
+    version="1.0.0",
+)
+
+# CORS — allow Vite dev server and deployed origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,25 +40,68 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount the main app at /api
-app.mount("/api", passx_app)
 
-# Also expose direct endpoints at root level for flexibility
+# ---------------------------------------------------------------------------
+# Request / Response models (Pydantic)
+# ---------------------------------------------------------------------------
+
+
+class AnalyzeRequest(BaseModel):
+    password: str = Field(..., description="The password to analyze")
+
+
+class GenerateRequest(BaseModel):
+    length: int = Field(default=16, ge=4, le=128, description="Password length")
+    use_uppercase: bool = Field(default=True)
+    use_lowercase: bool = Field(default=True)
+    use_digits: bool = Field(default=True)
+    use_symbols: bool = Field(default=True)
+    exclude_ambiguous: bool = Field(default=False)
+
+
+# ---------------------------------------------------------------------------
+# Endpoints (Dual-routed for local dev & Vercel serverless /api prefix)
+# ---------------------------------------------------------------------------
+
+
 @app.get("/")
-async def root():
-    return {"status": "ok", "service": "pass-x-analyzer-api"}
-
 @app.get("/health")
+@app.get("/api/health")
 async def health():
+    """Health check endpoint."""
     return {"status": "ok", "service": "pass-x-analyzer"}
 
+
 @app.post("/analyze")
-async def analyze_proxy(req: dict):
-    from apps.server.main import analyze_password, AnalyzeRequest
-    return await analyze_password(AnalyzeRequest(**req))
+@app.post("/api/analyze")
+async def analyze_password(req: AnalyzeRequest):
+    """
+    Analyze a password and return the full strength report.
+    Returns score, category, individual check results, entropy,
+    crack-time estimates, suggestions, and a stronger version hint.
+    """
+    result = analyze(req.password)
+    return asdict(result)
+
 
 @app.post("/generate")
-async def generate_proxy(req: dict = None):
-    from apps.server.main import generate, GenerateRequest
-    req_obj = GenerateRequest(**(req or {}))
-    return await generate(req_obj)
+@app.post("/api/generate")
+async def generate(req: GenerateRequest):
+    """
+    Generate a random password with the given options and return
+    both the password and its analysis.
+    """
+    options = GeneratorOptions(
+        length=req.length,
+        use_uppercase=req.use_uppercase,
+        use_lowercase=req.use_lowercase,
+        use_digits=req.use_digits,
+        use_symbols=req.use_symbols,
+        exclude_ambiguous=req.exclude_ambiguous,
+    )
+
+    gen_result = generate_password(options)
+    analysis = analyze(gen_result.password)
+    gen_result.analysis = analysis
+
+    return asdict(gen_result)

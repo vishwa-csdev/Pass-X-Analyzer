@@ -12,10 +12,10 @@ Built for the Andropedia Technical Recruitment 2026 — Round 1.
 |-------|-----------|---------|
 | **Core Logic** | Python 3.10+ | Scoring, entropy, crack-time, pattern detection, dictionary checks, generation |
 | **CLI** | Python `argparse` | Terminal-based password analysis and generation |
-| **API** | FastAPI + Pydantic | Stateless REST API (`/analyze`, `/generate`) |
-| **Frontend** | React 18 + Vite | Component-based UI with fast HMR |
-| **Styling** | Tailwind CSS 4 | Utility-first responsive design |
-| **Animation** | Framer Motion | Spring-based micro-animations |
+| **API** | FastAPI + Pydantic | Stateless REST API (`/analyze`, `/generate`) with Vercel serverless support |
+| **Frontend** | React 19 + Vite | Responsive, split-layout UI with fast HMR |
+| **Styling** | Tailwind CSS 4 | Utility-first dark theme (Obsidian / Vault design system) |
+| **Animation** | Framer Motion | Spring-based micro-animations and live entropy waveform |
 | **Testing** | pytest | 54 unit tests covering edge cases |
 
 ---
@@ -24,38 +24,43 @@ Built for the Andropedia Technical Recruitment 2026 — Round 1.
 
 ```
 Pass-X-Analyzer/
+├── api/
+│   └── index.py             ← FastAPI backend (Vercel Serverless Function & local dev)
+├── cli/
+│   ├── __init__.py
+│   └── main.py              ← CLI wrapper (argparse)
 ├── packages/
-│   └── core/               ← Python core: scoring, entropy, crack-time, checks, generator
-│       ├── analyzer.py      ← Main orchestrator
-│       ├── checks.py        ← Individual check functions
-│       ├── entropy.py       ← Entropy calculation
-│       ├── crack_time.py    ← Crack-time estimation
-│       ├── generator.py     ← Password generator (secrets module)
-│       ├── suggestions.py   ← Suggestion engine
-│       ├── models.py        ← Dataclasses (no framework dependency)
+│   └── core/                ← Core Python package: scoring, entropy, crack-time, generator
+│       ├── analyzer.py       ← Main orchestrator
+│       ├── checks.py         ← Individual check functions
+│       ├── crack_time.py     ← Crack-time estimation
+│       ├── entropy.py        ← Entropy calculation
+│       ├── generator.py      ← Password generator (secrets module)
+│       ├── models.py         ← Dataclasses (no framework dependency)
+│       ├── suggestions.py    ← Suggestion engine
 │       └── data/
 │           └── common_passwords.txt  ← Top 10K common passwords
-├── apps/
-│   ├── cli/
-│   │   └── main.py          ← CLI wrapper (argparse)
-│   ├── server/
-│   │   └── main.py          ← FastAPI server
-│   └── web/
-│       └── src/             ← React + Vite frontend
-│           ├── App.jsx
-│           ├── api.js
-│           ├── index.css
-│           └── components/
-│               ├── PasswordInput.jsx
-│               ├── StrengthMeter.jsx
-│               ├── Checklist.jsx
-│               ├── Suggestions.jsx
-│               ├── EntropyDisplay.jsx
-│               └── GeneratorPanel.jsx
+├── src/                     ← React + Vite frontend source
+│   ├── App.jsx              ← Main two-column split layout
+│   ├── api.js               ← API client (local & production routing)
+│   ├── index.css            ← Design tokens & ambient animations
+│   ├── main.jsx             ← React root entrypoint
+│   └── components/
+│       ├── Checklist.jsx
+│       ├── EntropyDisplay.jsx
+│       ├── GeneratorPanel.jsx
+│       ├── PasswordInput.jsx
+│       ├── StrengthMeter.jsx
+│       └── Suggestions.jsx
+├── public/                  ← Favicons and static assets
 ├── tests/
-│   └── test_analyzer.py     ← 54 pytest tests
-├── pyproject.toml
-├── requirements.txt
+│   └── test_analyzer.py      ← 54 pytest tests
+├── index.html               ← Web entrypoint
+├── vite.config.js           ← Vite configuration
+├── package.json             ← Node dependencies & scripts
+├── pyproject.toml           ← Python package configuration
+├── requirements.txt         ← Python dependencies
+├── vercel.json              ← Production Vercel deployment configuration
 └── README.md
 ```
 
@@ -65,7 +70,7 @@ Pass-X-Analyzer/
 
 ### Prerequisites
 - **Python 3.10+**
-- **Node.js 18+** (for the web frontend)
+- **Node.js 18+**
 
 ### 1. Set Up Python Environment
 
@@ -81,28 +86,28 @@ pip install -r requirements.txt
 ### 2. Run Tests
 
 ```bash
-python -m pytest tests/ -v
+pytest tests/ -v
 ```
 
 ### 3. Run the CLI
 
 ```bash
 # Analyze a password
-python -m apps.cli.main analyze --password "YourPassword123!"
+python -m cli.main analyze --password "YourPassword123!"
 
 # Interactive mode (prompts for password)
-python -m apps.cli.main analyze
+python -m cli.main analyze
 
 # Generate a password
-python -m apps.cli.main generate --length 20
-python -m apps.cli.main generate --length 16 --exclude-ambiguous
+python -m cli.main generate --length 20
+python -m cli.main generate --length 16 --exclude-ambiguous
 ```
 
-### 4. Start the API Server
+### 4. Start the Local API Server
 
 ```bash
 source .venv/bin/activate
-uvicorn apps.server.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn api.index:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API will be available at `http://localhost:8000`.
@@ -110,14 +115,21 @@ The API will be available at `http://localhost:8000`.
 ### 5. Start the Web Frontend
 
 ```bash
-cd apps/web
 npm install
 npm run dev
 ```
 
 Open `http://localhost:5173` in your browser.
 
-> **Both the API server and Vite dev server must be running simultaneously** for the web UI to work.
+---
+
+## ☁️ Deployment on Vercel
+
+The project is structured for zero-configuration deployment on Vercel:
+
+1. Import the repository in [Vercel](https://vercel.com/new).
+2. Leave all settings at their defaults.
+3. Vercel will automatically build the Vite frontend (into `dist/`) and deploy the Python FastAPI backend as a serverless function (`api/index.py`).
 
 ---
 
@@ -187,50 +199,17 @@ Crack time is estimated under two attack scenarios:
 
 Formula: `time = 2^(entropy - 1) / guesses_per_second`
 
-(Using half the keyspace for average-case brute force.)
-
 ---
 
 ## 🎁 Bonus Features Implemented
 
 - ✅ **Password Generator** — configurable length, character-set toggles, exclude ambiguous characters (`O0l1I|`)
-- ✅ **Entropy Calculation** — displayed with the formula used
-- ✅ **Crack-Time Estimates** — two scenarios with stated assumptions
-- ✅ **Full Web Application** — React + Vite with responsive design
-- ✅ **Copy to Clipboard** — one-click copy on generated passwords
+- ✅ **Entropy Calculation** — displayed with mathematical formula breakdown
+- ✅ **Crack-Time Estimates** — dual attack scenario estimations
+- ✅ **Live Entropy Waveform** — real-time signature audio/noise waveform animation reacting to password strength
+- ✅ **Two-Column Split Layout** — dedicated analyzer on left, generator on right
+- ✅ **One-Click Copy** — instant clipboard copying with visual confirmation
 - ✅ **Stronger Version Hint** — suggests a stronger variant of weak passwords
-- ✅ **Animated UI** — Framer Motion spring animations on the strength meter, checklist, and panels
-- ✅ **Dark Glassmorphism Theme** — premium visual design with backdrop blur and subtle gradients
-- ✅ **Responsive Layout** — mobile-first, single column → two-column at 768px+
-- ✅ **Edge-Case Handling** — empty input, 1–2 chars, digits-only, repeated chars, leaked passwords
-
----
-
-## 📝 Important Assumptions
-
-1. **No persistent state** — the API is fully stateless; no passwords are stored or logged.
-2. **Common-password list** — sourced from SecLists top 10K most common passwords (case-insensitive matching).
-3. **Entropy model** — assumes uniform random character selection per class. Real-world entropy may be lower for human-chosen passwords.
-4. **Crack-time estimates** — theoretical best-case for the attacker; actual times depend on hashing algorithm, salting, hardware, and attack strategy.
-5. **Password generator** — uses Python's `secrets` module (cryptographically secure PRNG).
-6. **CORS** — the API allows requests from `localhost:5173` for local development.
-
----
-
-## 🧪 Test Coverage
-
-54 tests covering:
-- Empty/short input edge cases
-- Single character-class passwords
-- Repeated character detection
-- Sequential pattern detection (ascending + descending)
-- Keyboard-walk detection
-- Common-password lookup (case-insensitive)
-- Length bonus tiers
-- Entropy calculation correctness
-- Crack-time estimation ranges
-- Full integration analysis
-- Generator output validation (length, character classes, ambiguous exclusion)
-
----
-
+- ✅ **Dark Obsidian/Vault Theme** — sleek, high-contrast dark design with subtle ambient background motion
+- ✅ **Vercel Serverless Ready** — unified single-directory fullstack configuration
+- ✅ **54/54 Unit Tests Passing** — complete edge case coverage

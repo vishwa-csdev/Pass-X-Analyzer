@@ -17,7 +17,7 @@ import sys
 import os
 
 # Ensure project root is on the path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from packages.core.analyzer import analyze
 from packages.core.generator import generate_password
