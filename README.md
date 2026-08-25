@@ -207,9 +207,6 @@ Formula: `time = 2^(entropy - 1) / guesses_per_second`
 - Entropy Calculation — displayed with mathematical formula breakdown
 - Crack-Time Estimates — dual attack scenario estimations
 - Live Entropy Waveform — real-time signature audio/noise waveform animation reacting to password strength
-- Two-Column Split Layout — dedicated analyzer on left, generator on right
 - One-Click Copy — instant clipboard copying with visual confirmation
 - Stronger Version Hint — suggests a stronger variant of weak passwords
-- Dark Obsidian/Vault Theme — sleek, high-contrast dark design with subtle ambient background motion
-- Vercel Serverless Ready — unified single-directory fullstack configuration
-- 54/54 Unit Tests Passing — complete edge case coverage
+- Complete edge case coverage
