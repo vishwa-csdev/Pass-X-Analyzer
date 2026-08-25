@@ -75,10 +75,10 @@ function App() {
           </div>
           <div className="tw:flex-1 tw:flex tw:justify-end">
             <a 
-              href="https://github.com/andropedia/pass-x-analyzer" 
+              href="https://github.com/vishwa-csdev/Pass-X-Analyzer" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="tw:text-[var(--text-muted)] hover:tw:text-[var(--text-primary)] tw:transition-colors tw:p-2 tw:rounded-md focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--color-signal-glow)]"
+              className="tw:text-[var(--text-muted)] hover:tw:text-[var(--text-primary)] tw:transition-colors tw:p-2 tw:rounded-md focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--color-signal)]"
               aria-label="View on GitHub"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
