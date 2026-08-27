@@ -8,7 +8,6 @@ from packages.core.checks import run_all_checks
 from packages.core.entropy import calculate_entropy, entropy_score_bonus
 from packages.core.crack_time import estimate_crack_time
 from packages.core.suggestions import generate_suggestions, suggest_stronger_version
-from packages.core.breach import breach_check_for_password
 from packages.core.models import AnalysisResult
 
 
@@ -56,8 +55,6 @@ def analyze(password: str) -> AnalysisResult:
             entropy_formula="Empty password — 0 bits",
             crack_times=estimate_crack_time(0),
             stronger_version=None,
-            breach_detected=False,
-            breach_count=None,
         )
 
     # Run all checks
@@ -97,11 +94,6 @@ def analyze(password: str) -> AnalysisResult:
     # Crack-time estimates
     crack_times = estimate_crack_time(entropy_bits)
 
-    # Breach check - frontend only, doesn't affect scoring per requirements
-    breach_result = breach_check_for_password(password)
-    breach_detected = breach_result.get("found", False)
-    breach_count = breach_result.get("matches") if breach_detected else None
-
     return AnalysisResult(
         password_length=len(password),
         score=total_score,
@@ -113,6 +105,4 @@ def analyze(password: str) -> AnalysisResult:
         entropy_formula=entropy_formula,
         crack_times=crack_times,
         stronger_version=stronger,
-        breach_detected=breach_detected,
-        breach_count=breach_count,
     )

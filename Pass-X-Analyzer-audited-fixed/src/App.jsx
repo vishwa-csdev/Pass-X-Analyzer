@@ -8,8 +8,6 @@ import Suggestions from './components/Suggestions';
 import EntropyDisplay from './components/EntropyDisplay';
 import GeneratorPanel from './components/GeneratorPanel';
 import SpaceBackground from './components/SpaceBackground';
-import BreachCheckCard from './components/BreachCheckCard';
-import HowThisWorks from './components/HowThisWorks';
 import { analyzePassword } from './api';
 
 function App() {
@@ -176,31 +174,6 @@ function App() {
                       suggestions={result.suggestions}
                       strongerVersion={result.stronger_version}
                     />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Breach Check - Full Width */}
-            <AnimatePresence>
-              {hasResult && (
-                <motion.div
-                  className="tw:mt-6"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <BreachCheckCard password={password} />
-                  {/* How This Works Link */}
-                  <div className="tw:flex tw:justify-center tw:mt-4">
-                    <a href="/how-it-works"
-                       className="tw:text-xs font-body-mono tw:text-[var(--text-muted)] hover:tw:text-[var(--text-phosphor)] tw:transition-colors tw:underline-offset-2"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                    >
-                      How this works →
-                    </a>
                   </div>
                 </motion.div>
               )}
