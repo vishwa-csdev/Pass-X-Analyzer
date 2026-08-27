@@ -581,6 +581,66 @@ body::before {
   gap: 0.9rem;
 }
 
+.breach-scanner {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px solid rgba(57, 255, 136, 0.16);
+  border-radius: 0.75rem;
+  background: rgba(5, 7, 10, 0.62);
+}
+
+.scanner-track {
+  position: relative;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.scanner-track span {
+  position: absolute;
+  inset: 0 auto 0 -35%;
+  width: 35%;
+  border-radius: inherit;
+  background: var(--phosphor);
+  box-shadow: 0 0 14px rgba(57, 255, 136, 0.75);
+  opacity: 0.35;
+}
+
+.breach-scanner--active .scanner-track span {
+  opacity: 1;
+  animation: scanner-run 0.8s linear infinite;
+}
+
+.breach-scanner--alert {
+  border-color: rgba(255, 59, 59, 0.4);
+}
+
+.breach-scanner--alert .scanner-track span {
+  background: var(--alert-red);
+  box-shadow: 0 0 14px rgba(255, 59, 59, 0.7);
+}
+
+.scanner-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-muted);
+  font: 0.62rem var(--font-body);
+  letter-spacing: 0.14em;
+}
+
+.scanner-caption strong {
+  color: var(--phosphor);
+  font-weight: 500;
+}
+
+.breach-scanner--alert .scanner-caption strong {
+  color: var(--alert-red);
+}
+
 .radar-wrap {
   position: relative;
   width: 100%;
@@ -961,6 +1021,11 @@ body::before {
 @keyframes radar-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes scanner-run {
+  from { transform: translateX(0); }
+  to { transform: translateX(385%); }
 }
 
 @keyframes pulse {

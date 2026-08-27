@@ -9,16 +9,18 @@ from __future__ import annotations
 
 import sys
 import os
+import time
 from dataclasses import asdict
-from typing import Optional
+from collections import defaultdict
 
 # Ensure project root is in sys.path
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from packages.core.analyzer import analyze
@@ -32,11 +34,37 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — allow Vite dev server and deployed origins
+_request_buckets: dict[tuple[str, str], list[float]] = defaultdict(list)
+_RATE_LIMIT = 60
+_RATE_WINDOW_SECONDS = 60
+
+
+@app.middleware("http")
+async def protect_public_endpoints(request: Request, call_next):
+    """Apply a small per-instance abuse limit to computational endpoints."""
+    if request.method == "POST" and request.url.path.rstrip("/") in {
+        "/analyze", "/api/analyze", "/generate", "/api/generate",
+        "/breach-check", "/api/breach-check",
+    }:
+        forwarded_for = request.headers.get("x-forwarded-for", "")
+        client_ip = forwarded_for.split(",", 1)[0].strip() or (request.client.host if request.client else "unknown")
+        bucket_key = (client_ip, request.url.path)
+        now = time.monotonic()
+        recent_requests = [stamp for stamp in _request_buckets[bucket_key] if now - stamp < _RATE_WINDOW_SECONDS]
+        if len(recent_requests) >= _RATE_LIMIT:
+            return JSONResponse({"detail": "Too many requests. Please try again shortly."}, status_code=429)
+        recent_requests.append(now)
+        _request_buckets[bucket_key] = recent_requests
+
+    return await call_next(request)
+
+
+# Production is same-origin; FRONTEND_ORIGINS is only needed for a separate UI.
+configured_origins = [origin.strip() for origin in os.getenv("FRONTEND_ORIGINS", "").split(",") if origin.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=configured_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -48,7 +76,7 @@ app.add_middleware(
 
 
 class AnalyzeRequest(BaseModel):
-    password: str = Field(..., description="The password to analyze")
+    password: str = Field(..., max_length=512, description="The password to analyze")
 
 
 class GenerateRequest(BaseModel):
@@ -61,8 +89,8 @@ class GenerateRequest(BaseModel):
 
 
 class BreachCheckRequest(BaseModel):
-    prefix: str = Field(..., min_length=5, max_length=5, description="First five characters of the SHA-1 digest")
-    suffix: str = Field(..., min_length=35, max_length=35, description="Remaining SHA-1 digest characters")
+    prefix: str = Field(..., min_length=5, max_length=5, pattern=r"^[0-9A-Fa-f]{5}$", description="First five characters of the SHA-1 digest")
+    suffix: str = Field(..., min_length=35, max_length=35, pattern=r"^[0-9A-Fa-f]{35}$", description="Remaining SHA-1 digest characters")
 
 
 # ---------------------------------------------------------------------------

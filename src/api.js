@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8000';
+// Use the same relative API path in development and production. Vite proxies
+// /api requests locally to FastAPI, while Vercel routes them to api/index.py.
+const API_BASE = '/api';
 
 /**
  * Analyze a password via the FastAPI backend.

@@ -35,14 +35,13 @@ def breach_check_for_hash(prefix: str, suffix: str, timeout: float = 5.0) -> Dic
             timeout=timeout,
         )
         response.raise_for_status()
-    except httpx.HTTPError as exc:
+    except httpx.HTTPError:
         return {
             "found": False,
             "matches": 0,
             "count": 0,
             "status": "scan_error",
             "message": "Breach database unavailable right now.",
-            "error": str(exc),
         }
 
     for line in response.text.splitlines():

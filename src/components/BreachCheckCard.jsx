@@ -1,12 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { breachCheckPassword } from '../api';
-
-const signalPositions = [
-  [18, 26], [32, 18], [48, 12], [68, 16], [82, 26],
-  [88, 42], [84, 60], [66, 80], [46, 88], [24, 78],
-  [12, 60], [12, 42], [22, 48], [56, 28], [62, 58], [40, 68],
-];
 
 function BreachCheckCard({ password }) {
   const [result, setResult] = useState(null);
@@ -57,12 +51,9 @@ function BreachCheckCard({ password }) {
     setScanKey((value) => value + 1);
   };
 
-  const statusClass = useMemo(() => {
-    if (!result) return 'scan-status';
-    if (result.status === 'breach_detected') return 'scan-status scan-status--alert';
-    if (result.status === 'scan_error') return 'scan-status scan-status--warn';
-    return 'scan-status';
-  }, [result]);
+  const statusClass = result?.status === 'breach_detected'
+    ? 'scan-status scan-status--alert'
+    : result?.status === 'scan_error' ? 'scan-status scan-status--warn' : 'scan-status';
 
   const label = result?.found ? '⚠ BREACH DETECTED' : 'NO SIGNAL DETECTED';
   const matchText = result && result.matches > 0 ? `${result.matches} MATCHES` : '0 MATCHES';
@@ -76,15 +67,11 @@ function BreachCheckCard({ password }) {
         </h2>
       </div>
 
-      <div className="radar-wrap">
-        <div className="radar" aria-live="polite">
-          <div className="radar-sweep" style={{ opacity: loading ? 1 : 0.8 }} />
-          <div className="radar-pulse" style={{ opacity: result?.found ? 1 : 0.35 }} />
-          <div className="breach-legend">
-            {signalPositions.map(([x, y], i) => (
-              <span key={i} style={{ left: `${x}%`, top: `${y}%`, opacity: loading || result?.found ? 1 : 0.4 }} />
-            ))}
-          </div>
+      <div className={`breach-scanner ${loading ? 'breach-scanner--active' : ''} ${result?.found ? 'breach-scanner--alert' : ''}`} aria-live="polite">
+        <div className="scanner-track"><span /></div>
+        <div className="scanner-caption">
+          <span>{loading ? 'QUERYING HIBP RANGE' : result ? 'SCAN COMPLETE' : 'READY TO SCAN'}</span>
+          <strong>{result ? (result.found ? 'EXPOSED' : 'CLEAR') : '—'}</strong>
         </div>
       </div>
 

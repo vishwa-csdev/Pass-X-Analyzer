@@ -132,6 +132,15 @@ The project is structured for zero-configuration deployment on Vercel:
 2. Leave all settings at their defaults.
 3. Vercel will automatically build the Vite frontend (into `dist/`) and deploy the Python FastAPI backend as a serverless function (`api/index.py`).
 
+After deployment, no local server or Python process is needed. The deployed frontend calls
+the deployed `/api` function automatically. Set the `FRONTEND_ORIGINS` environment variable
+only when hosting the frontend on a separate domain; a single Vercel project uses same-origin
+requests and needs no CORS configuration.
+
+The API includes a lightweight per-instance request limit and production security headers.
+For high-traffic use, add a distributed rate limiter at the edge or through an API gateway,
+because serverless instance memory is not shared across all invocations.
+
 ---
 
 ## 🧮 How the Strength Score Is Calculated
