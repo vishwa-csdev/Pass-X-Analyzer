@@ -124,6 +124,12 @@ async def health():
     return {"status": "ok", "service": "pass-x-analyzer"}
 
 
+@app.get("/api/index.py/health")
+async def rewritten_health():
+    """Compatibility route for Vercel rewrites targeting the function file."""
+    return {"status": "ok", "service": "pass-x-analyzer"}
+
+
 @app.post("/analyze")
 @app.post("/api/analyze")
 async def analyze_password(req: AnalyzeRequest):
