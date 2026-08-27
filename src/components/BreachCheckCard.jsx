@@ -29,7 +29,7 @@ function BreachCheckCard({ password }) {
           setResult(data);
           setStatusText(data.found ? 'BREACH DETECTED' : 'NO SIGNAL DETECTED');
         }
-      } catch (error) {
+      } catch {
         if (active) {
           setResult({ found: false, matches: 0, status: 'scan_error', message: 'BREACH INDEX UNAVAILABLE' });
           setStatusText('DATABASE ERROR');

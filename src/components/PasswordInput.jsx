@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -8,38 +8,26 @@ import { Eye, EyeOff } from 'lucide-react';
  */
 function EntropyWaveform({ entropyBits }) {
   const prefersReducedMotion = useReducedMotion();
-  const [points, setPoints] = useState('0,10 100,10');
 
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      // Just a flat line if reduced motion
-      setPoints('0,10 100,10');
-      return;
+  const points = useMemo(() => {
+    if (prefersReducedMotion || entropyBits === 0) {
+      return '0,10 100,10';
     }
 
-    if (entropyBits === 0) {
-      setPoints('0,10 100,10');
-      return;
-    }
-
-    // Generate a jagged line based on entropy
-    // Higher entropy = more points, higher amplitude
     const numPoints = Math.min(Math.max(Math.floor(entropyBits / 2), 5), 40);
-    const amplitude = Math.min(entropyBits / 10, 8); // Max 8px up/down from center (10)
-    
+    const amplitude = Math.min(entropyBits / 10, 8);
+
     let newPoints = '0,10 ';
     const step = 100 / numPoints;
-    
+
     for (let i = 1; i < numPoints; i++) {
       const x = i * step;
-      // Random value between -amplitude and +amplitude
       const yOffset = (Math.random() * 2 - 1) * amplitude;
       const y = 10 + yOffset;
       newPoints += `${x.toFixed(1)},${y.toFixed(1)} `;
     }
-    newPoints += '100,10';
-    
-    setPoints(newPoints);
+
+    return `${newPoints}100,10`;
   }, [entropyBits, prefersReducedMotion]);
 
   // Determine color based on entropy loosely matching the strength tiers
