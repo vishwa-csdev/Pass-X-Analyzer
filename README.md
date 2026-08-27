@@ -1,4 +1,8 @@
-# Pass-X Analyzer
+<p align="center">
+  <a href="https://pass-x-analyzer.vercel.app">
+    <img src="https://readme-typing-svg.demolab.com?font=VT323&size=42&duration=2500&pause=1200&color=39FF88&background=05070A&center=true&vCenter=true&width=650&height=90&lines=Pass-X-+Analyzer;Password+Strength+Analyzer;Entropy+-+Crack-Time+-+Generator" alt="Pass-X-Analyzer">
+  </a>
+</p>
 
 <p align="center">
   <b>Password Strength Analyzer</b> — real-time scoring, entropy calculation, crack-time estimation, and secure password generation.
@@ -16,10 +20,15 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Editor-Code_--_OSS-2C2C32?logo=visual-studio-code&logoColor=39FF88" alt="Code - OSS">
+  <img src="https://img.shields.io/badge/Agent-Antigravity-1B1035?logoColor=39FF88" alt="Antigravity">
+  <img src="https://img.shields.io/badge/OS-CachyOS-05070A?logo=cachyos&logoColor=39FF88" alt="CachyOS">
+</p>
+
+<p align="center">
   <a href="https://pass-x-analyzer.vercel.app"><b>Live Demo</b></a>
 </p>
 
-Built for the **Andropedia Technical Recruitment 2026 — Round 1**.
 
 ---
 
@@ -235,7 +244,7 @@ Formula: `time = 2^(entropy - 1) / guesses_per_second`
 - **Stronger Version Hint** — suggests a stronger variant of weak passwords
 - **Dark Obsidian/Vault Theme** — sleek, high-contrast dark design with subtle ambient background motion
 - **Vercel Serverless Ready** — unified single-directory fullstack configuration
-- **61/61 Unit Tests Passing** — complete edge case coverage
+- **54/54 Unit Tests Passing** — complete edge case coverage
 
 ---
 
