@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GitBranch, ShieldQuestion, Zap } from 'lucide-react';
+import { ShieldQuestion, Zap } from 'lucide-react';
 import PasswordInput from './components/PasswordInput';
 import StrengthMeter from './components/StrengthMeter';
 import Checklist from './components/Checklist';
@@ -9,32 +9,14 @@ import EntropyDisplay from './components/EntropyDisplay';
 import GeneratorPanel from './components/GeneratorPanel';
 import SpaceBackground from './components/SpaceBackground';
 import BreachCheckCard from './components/BreachCheckCard';
-import HowItWorks from './components/HowItWorks';
 import { analyzePassword } from './api';
 
 function App() {
-  const [view, setView] = useState(() => window.location.pathname === '/analyzer' ? 'analyzer' : 'intro');
   const [password, setPassword] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
   const debounceRef = useRef(null);
-
-  useEffect(() => {
-    const handleRouteChange = () => {
-      setView(window.location.pathname === '/analyzer' ? 'analyzer' : 'intro');
-    };
-
-    window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
-  }, []);
-
-  const navigate = (path) => {
-    window.history.pushState({}, '', path);
-    setView(path === '/analyzer' ? 'analyzer' : 'intro');
-    setShowHowItWorks(false);
-  };
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -66,20 +48,11 @@ function App() {
 
   const hasResult = result && result.score !== undefined;
 
-  if (showHowItWorks || view === 'intro') {
-    return (
-      <>
-        <SpaceBackground />
-        <HowItWorks onBack={() => navigate('/analyzer')} />
-      </>
-    );
-  }
-
   return (
     <>
       <SpaceBackground />
 
-      <div className="app-shell tw:w-full tw:max-w-6xl tw:mx-auto tw:min-h-screen tw:flex tw:flex-col tw:justify-center tw:items-stretch tw:px-3 tw:py-4 sm:tw:px-4 md:tw:px-6 lg:tw:px-8">
+      <div className="app-shell tw:max-w-7xl tw:mx-auto tw:p-4 md:tw:p-8 tw:min-h-screen tw:flex tw:flex-col">
         <motion.header
           className="terminal-header tw:flex tw:items-center tw:justify-between tw:mb-8 md:tw:mb-10"
           initial={{ opacity: 0, y: -12 }}
@@ -95,41 +68,22 @@ function App() {
             </h1>
           </div>
           <div className="tw:flex-1 tw:flex tw:justify-end">
-            <motion.a
+            <a
               href="https://github.com/vishwa-csdev/Pass-X-Analyzer"
               target="_blank"
               rel="noopener noreferrer"
-              className="terminal-link github-link"
+              className="terminal-link"
               aria-label="View repository"
-              whileHover={{ scale: 1.08, rotate: 3 }}
-              whileTap={{ scale: 0.94 }}
             >
-              <GitBranch size={21} strokeWidth={1.8} />
-              <span>REPOSITORY</span>
-            </motion.a>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                <path d="M9 18c-4.51 2-5-2-7-2" />
+              </svg>
+            </a>
           </div>
         </motion.header>
 
-        <motion.section
-          className="command-hero"
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.65, delay: 0.1, ease: 'easeOut' }}
-        >
-          <div className="hero-orbit hero-orbit--outer" />
-          <div className="hero-orbit hero-orbit--inner" />
-          <div className="hero-kicker">SECURITY OPERATIONS</div>
-          <p className="hero-copy">LIVE PASSWORD TELEMETRY AND LOCAL BREACH INTELLIGENCE</p>
-          <div className="hero-readout">
-            <span>SESSION STATE</span>
-            <strong>{password ? 'SIGNAL ACQUIRED' : 'AWAITING INPUT'}</strong>
-          </div>
-          <button className="hero-help-link" type="button" onClick={() => navigate('/how-it-works')}>
-            HOW THIS WORKS
-          </button>
-        </motion.section>
-
-        <div className="mission-grid tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6 md:tw:gap-7 tw:items-start tw:flex-grow tw:w-full tw:mx-auto tw:max-w-5xl">
+        <div className="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6 md:tw:gap-8 tw:items-start tw:flex-grow">
           <div className="tw:flex tw:flex-col tw:gap-6">
             <h2 className="panel-label tw:flex tw:items-center tw:gap-2">
               <ShieldQuestion size={18} />

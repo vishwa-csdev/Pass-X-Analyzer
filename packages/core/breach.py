@@ -12,21 +12,23 @@ def _sha1_digest(password: str) -> str:
     return hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
 
 
-def breach_check_for_hash(prefix: str, suffix: str, timeout: float = 5.0) -> Dict[str, Any]:
-    """Check a SHA-1 hash suffix against the HIBP range API.
+def breach_check_for_password(password: str, timeout: float = 5.0) -> Dict[str, Any]:
+    """Check a password against the HIBP range API.
 
     Returns a normalized dictionary with a user-facing status and count.
     """
-    prefix = prefix.strip().upper()
-    suffix = suffix.strip().upper()
-    if len(prefix) != 5 or len(suffix) != 35:
+    if not password:
         return {
             "found": False,
             "matches": 0,
             "count": 0,
-            "status": "scan_error",
-            "message": "Invalid k-anonymous hash query.",
+            "status": "no_signal",
+            "message": "No password provided for breach scan.",
         }
+
+    digest = _sha1_digest(password)
+    prefix = digest[:5]
+    suffix = digest[5:]
 
     try:
         response = httpx.get(
@@ -70,18 +72,3 @@ def breach_check_for_hash(prefix: str, suffix: str, timeout: float = 5.0) -> Dic
         "status": "no_signal",
         "message": "No signal detected in known breach data.",
     }
-
-
-def breach_check_for_password(password: str, timeout: float = 5.0) -> Dict[str, Any]:
-    """Hash a password, then perform a k-anonymous HIBP range lookup."""
-    if not password:
-        return {
-            "found": False,
-            "matches": 0,
-            "count": 0,
-            "status": "no_signal",
-            "message": "No password provided for breach scan.",
-        }
-
-    digest = _sha1_digest(password)
-    return breach_check_for_hash(digest[:5], digest[5:], timeout=timeout)

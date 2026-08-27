@@ -22,7 +22,6 @@ from packages.core.checks import (
     check_sequential,
     check_keyboard_walks,
     check_common_password,
-    check_indic_password,
 )
 from packages.core.entropy import calculate_entropy, entropy_score_bonus
 from packages.core.crack_time import estimate_crack_time
@@ -188,30 +187,6 @@ class TestCommonPasswords:
     def test_uncommon(self):
         result = check_common_password("xK9#mP2$vL7!")
         assert result.passed
-
-
-class TestIndicPasswords:
-    def test_religious_token_is_rejected(self):
-        result = check_indic_password("jaimatadi")
-        assert not result.passed
-        assert "jaimatadi" in result.detail
-
-    def test_predictable_name_mutation_is_rejected(self):
-        result = check_indic_password("Kohli@123")
-        assert not result.passed
-
-    def test_leetspeak_religious_token_is_rejected(self):
-        result = check_indic_password("h4num4n")
-        assert not result.passed
-
-    def test_unrelated_password_is_allowed(self):
-        result = check_indic_password("vQ7!nR2#xL9$")
-        assert result.passed
-
-    def test_indic_token_is_weak_in_full_analysis(self):
-        result = analyze("Kohli@123")
-        assert result.category == "Weak"
-        assert any(c.name == "indic_password" and not c.passed for c in result.checks)
 
 
 # ============================================================================

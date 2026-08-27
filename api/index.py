@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from packages.core.analyzer import analyze
-from packages.core.breach import breach_check_for_hash
+from packages.core.breach import breach_check_for_password
 from packages.core.generator import generate_password
 from packages.core.models import GeneratorOptions
 
@@ -61,8 +61,7 @@ class GenerateRequest(BaseModel):
 
 
 class BreachCheckRequest(BaseModel):
-    prefix: str = Field(..., min_length=5, max_length=5, description="First five characters of the SHA-1 digest")
-    suffix: str = Field(..., min_length=35, max_length=35, description="Remaining SHA-1 digest characters")
+    password: str = Field(..., description="The password to scan against known breach data")
 
 
 # ---------------------------------------------------------------------------
@@ -116,5 +115,5 @@ async def generate(req: GenerateRequest):
 @app.post("/breach-check")
 @app.post("/api/breach-check")
 async def breach_check(req: BreachCheckRequest):
-    """Check a k-anonymous SHA-1 query without accepting a raw password."""
-    return breach_check_for_hash(req.prefix, req.suffix)
+    """Check a password against the Have I Been Pwned range API."""
+    return breach_check_for_password(req.password)
