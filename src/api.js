@@ -1,6 +1,6 @@
 // Use the same relative API path in development and production. Vite proxies
 // /api requests locally to FastAPI, while Vercel routes them to api/index.py.
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/$/, '');
 
 /**
  * Analyze a password via the FastAPI backend.
@@ -13,7 +13,7 @@ export async function analyzePassword(password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password }),
   });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) { const t=await res.text().catch(()=> ''); throw new Error(`API error: ${res.status} ${t}`);} 
   return res.json();
 }
 
@@ -35,7 +35,7 @@ export async function generatePassword(options = {}) {
       exclude_ambiguous: options.excludeAmbiguous ?? false,
     }),
   });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) { const t=await res.text().catch(()=> ''); throw new Error(`API error: ${res.status} ${t}`);} 
   return res.json();
 }
 
