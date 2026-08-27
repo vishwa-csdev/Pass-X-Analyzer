@@ -1,71 +1,81 @@
 import { motion } from 'framer-motion';
 
 /**
- * Entropy display with formula and crack-time estimates.
+ * Signal Readouts Display - Seven Segment Style
+ * Displays entropy and crack-time estimates in seven-segment display style
  */
 export default function EntropyDisplay({ entropyBits, entropyFormula, crackTimes }) {
   if (entropyBits === undefined || entropyBits === null) return null;
 
   return (
     <motion.div
-      id="entropy-display"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      className="tw:flex tw:flex-col tw:gap-6"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
-      className="tw:flex tw:flex-col tw:gap-4"
     >
-      {/* Entropy */}
-      <div>
-        <h2 className="tw:text-xs font-display tw:font-semibold tw:tracking-widest tw:uppercase tw:mb-2" style={{ color: 'var(--text-muted)' }}>
-          Entropy
-        </h2>
-        <div className="tw:flex tw:items-baseline tw:gap-2 tw:mb-1">
-          <motion.span
-            className="tw:text-2xl font-data tw:font-bold"
-            style={{ color: 'var(--color-signal)' }}
-            key={entropyBits}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          >
-            {entropyBits}
-          </motion.span>
-          <span className="tw:text-sm font-body" style={{ color: 'var(--text-muted)' }}>bits</span>
+      {/* Signal Entropy Readout */}
+      <div className="tw:flex tw:items-baseline tw:gap-4">
+        <span className="font-display-pixel" style={{ color: 'var(--text-dim)' }}>
+          SIGNAL ENTROPY:
+        </span>
+        <div className="seven-seg-display"
+             style={{
+               color: entropyBits >= 70 ? 'var(--text-phosphor)' :
+                      entropyBits >= 40 ? 'var(--text-amber)' :
+                      'var(--text-dim)'
+             }}>
+          {Math.floor(entropyBits).toString().padStart(3, '0')}
         </div>
-        <div
-          className="tw:text-xs font-data tw:break-all tw:leading-relaxed"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          {entropyFormula}
-        </div>
+        <span className="font-display-pixel" style={{ color: 'var(--text-dim)' }}>
+          BITS
+        </span>
       </div>
 
-      {/* Crack Time */}
+      {/* Entropy Formula */}
+      <div className="tw:flex tw:items-start tw:gap-2 tw:mt-2">
+        <span className="font-body-mono" style={{ color: 'var(--text-dim)' }}>
+          FORMULA:
+        </span>
+        <span className="font-body-mono" style={{ color: 'var(--text-phosphor)' }}>
+          {entropyFormula}
+        </span>
+      </div>
+
+      {/* Crack Time Estimates */}
       {crackTimes && crackTimes.length > 0 && (
-        <div>
-          <h2 className="tw:text-xs font-display tw:font-semibold tw:tracking-widest tw:uppercase tw:mb-2" style={{ color: 'var(--text-muted)' }}>
-            Crack Time Estimates
-          </h2>
-          <div className="tw:space-y-2">
-            {crackTimes.map((ct) => (
-              <motion.div
-                key={ct.scenario}
-                className="tw:px-3 tw:py-2 tw:rounded-md tw:border tw:border-[var(--color-vault-line)]"
-                style={{ backgroundColor: 'var(--color-obsidian)' }}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <div className="tw:text-xs font-body tw:mb-0.5" style={{ color: 'var(--text-muted)' }}>
-                  {ct.scenario}
-                </div>
-                <div className="tw:text-sm font-data tw:font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  {ct.display}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <motion.div
+          className="tw:space-y-3"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          {crackTimes.map((ct, index) => (
+            <motion.div
+              key={ct.scenario}
+              className="tw:flex tw:items-baseline tw:gap-4"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+            >
+              <span className="font-body-mono" style={{
+                color: 'var(--text-dim)',
+                fontSize: '14px'
+              }}>
+                {ct.scenario.toUpperCase()}:
+              </span>
+              <div className="tw:flex-1 tw:text-end font-body-mono" style={{
+                color: ct.scenario.includes('Offline') || ct.display.includes('seconds') || ct.display.includes('minutes')
+                       ? 'var(--text-red)'
+                       : ct.scenario.includes('Online') && (ct.display.includes('hours') || ct.display.includes('days'))
+                       ? 'var(--text-amber)'
+                       : 'var(--text-phosphor)'
+              }}>
+                {ct.display}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       )}
     </motion.div>
   );

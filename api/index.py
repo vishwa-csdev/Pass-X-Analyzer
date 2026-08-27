@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 
 from packages.core.analyzer import analyze
 from packages.core.generator import generate_password
-from packages.core.models import GeneratorOptions
+from packages.core.models import GeneratorOptions, AnalysisResult
 
 app = FastAPI(
     title="Pass-X-Analyzer API",
@@ -81,7 +81,10 @@ async def analyze_password(req: AnalyzeRequest):
     crack-time estimates, suggestions, and a stronger version hint.
     """
     result = analyze(req.password)
-    return asdict(result)
+    # Convert to dict and ensure breach fields are included
+    result_dict = asdict(result)
+    # The dataclass conversion should already include breach_detected and breach_count
+    return result_dict
 
 
 @app.post("/generate")

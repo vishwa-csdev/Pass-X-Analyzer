@@ -46,6 +46,8 @@ class AnalysisResult:
     entropy_formula: str  # e.g. "log2(62^12) = 71.45 bits"
     crack_times: List[CrackTimeEstimate]
     stronger_version: Optional[str] = None  # A suggested stronger password
+    breach_detected: bool = False  # Whether password was found in breach databases
+    breach_count: Optional[int] = None  # Number of breach datasets where password was found
 
 
 @dataclass
