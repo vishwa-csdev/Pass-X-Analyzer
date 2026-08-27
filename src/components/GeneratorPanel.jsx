@@ -76,7 +76,7 @@ export default function GeneratorPanel() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="tw:flex tw:items-center tw:gap-2">
-          <KeyRound size={16} strokeWidth={2.5} style={{ color: 'var(--color-signal)' }} />
+          <KeyRound size={16} strokeWidth={2.5} style={{ color: 'var(--phosphor)' }} />
           <h2 className="tw:text-sm font-display tw:font-semibold tw:tracking-widest tw:uppercase" style={{ color: 'var(--text-primary)' }}>
             Password Generator
           </h2>
@@ -113,8 +113,8 @@ export default function GeneratorPanel() {
                   <span
                     className="tw:text-sm font-data tw:font-bold tw:tabular-nums tw:px-2 tw:py-0.5 tw:rounded"
                     style={{
-                      color: 'var(--color-signal)',
-                      backgroundColor: 'var(--color-signal-glow)',
+                      color: 'var(--phosphor)',
+                      backgroundColor: 'rgba(57, 255, 136, 0.1)',
                     }}
                   >
                     {length}
@@ -158,16 +158,16 @@ export default function GeneratorPanel() {
               <motion.button
                 id="generate-btn"
                 type="button"
-                className="tw:w-full tw:py-3 tw:rounded-md tw:font-body tw:font-semibold tw:text-sm tw:transition-colors tw:focus:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--color-signal-glow)]"
+                className="generator-action tw:w-full tw:py-3 tw:rounded-md tw:font-body tw:font-semibold tw:text-sm tw:transition-colors tw:focus:outline-none"
                 style={{ 
-                  backgroundColor: 'var(--color-signal)', 
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.1)'
+                  backgroundColor: 'transparent',
+                  color: 'var(--phosphor)',
+                  border: '1px solid rgba(57, 255, 136, 0.3)'
                 }}
                 onClick={handleGenerate}
                 disabled={loading}
                 whileTap={{ scale: 0.98 }}
-                whileHover={{ backgroundColor: '#818cf8' }}
+                whileHover={{ backgroundColor: 'rgba(57, 255, 136, 0.12)' }}
               >
                 {loading ? 'Generating...' : 'Generate New Password'}
               </motion.button>
@@ -180,14 +180,14 @@ export default function GeneratorPanel() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                    className="tw:space-y-3 tw:pt-2 tw:border-t tw:border-[var(--color-vault-line)]"
+                    className="generator-result tw:space-y-3 tw:pt-2"
                   >
                     <div 
-                      className="font-data tw:text-base tw:tracking-wider tw:p-4 tw:rounded-md tw:break-all"
+                      className="generator-output font-data tw:text-base tw:tracking-wider tw:p-4 tw:rounded-md tw:break-all"
                       style={{ 
-                        background: 'var(--color-obsidian)',
+                        background: 'rgba(5, 7, 10, 0.8)',
                         color: 'var(--text-primary)',
-                        border: '1px solid var(--color-vault-line)'
+                        border: '1px solid rgba(57, 255, 136, 0.18)'
                       }}
                     >
                       {generated.password}
@@ -207,11 +207,11 @@ export default function GeneratorPanel() {
                       <motion.button
                         id="copy-btn"
                         type="button"
-                        className="tw:flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:rounded-md tw:text-sm font-body tw:font-medium tw:transition-colors tw:focus:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--color-signal-glow)]"
+                        className="generator-copy tw:flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:rounded-md tw:text-sm font-body tw:font-medium tw:transition-colors tw:focus:outline-none"
                         style={{
-                          backgroundColor: copied ? 'var(--color-verified-bg)' : 'transparent',
-                          color: copied ? 'var(--color-verified)' : 'var(--color-signal)',
-                          border: `1px solid ${copied ? 'var(--color-verified)' : 'var(--color-vault-line)'}`
+                          backgroundColor: copied ? 'rgba(57, 255, 136, 0.12)' : 'transparent',
+                          color: copied ? 'var(--phosphor)' : 'var(--phosphor)',
+                          border: `1px solid ${copied ? 'var(--phosphor)' : 'rgba(57, 255, 136, 0.24)'}`
                         }}
                         onClick={handleCopy}
                         whileTap={{ scale: 0.95 }}
