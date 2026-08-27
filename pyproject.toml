@@ -21,6 +21,9 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["packages*", "apps*"]
 
+[tool.vercel]
+entrypoint = "api.index:app"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

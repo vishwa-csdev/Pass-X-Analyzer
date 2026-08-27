@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.py": {
+    "api/index.py": {
       "includeFiles": "packages/**"
     }
   },
@@ -17,9 +17,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
