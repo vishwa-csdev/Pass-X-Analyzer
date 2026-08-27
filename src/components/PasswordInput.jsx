@@ -8,7 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
  */
 function EntropyWaveform({ entropyBits }) {
   const prefersReducedMotion = useReducedMotion();
-  const [points, setPoints] = useState('');
+  const [points, setPoints] = useState('0,10 100,10');
 
   useEffect(() => {
     if (prefersReducedMotion) {

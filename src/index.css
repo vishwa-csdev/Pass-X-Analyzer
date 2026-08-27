@@ -331,8 +331,10 @@ body::before {
   text-decoration: none;
 }
 
-.mission-grid {
-  grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
+@media (min-width: 768px) {
+  .mission-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
+  }
 }
 
 .boot-tag {
