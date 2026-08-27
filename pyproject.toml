@@ -8,12 +8,13 @@ version = "1.0.0"
 description = "Password Strength Analyzer with scoring, entropy, crack-time, and generation"
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi>=0.104.0",
-    "uvicorn[standard]>=0.24.0",
+    "httpx>=0.25.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
     "pytest>=7.4.0",
     "httpx>=0.25.0",
 ]
