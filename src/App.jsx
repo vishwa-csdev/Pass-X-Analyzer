@@ -7,6 +7,8 @@ import Checklist from './components/Checklist';
 import Suggestions from './components/Suggestions';
 import EntropyDisplay from './components/EntropyDisplay';
 import GeneratorPanel from './components/GeneratorPanel';
+import BreachCheck from './components/BreachCheck';
+import HowItWorks from './components/HowItWorks';
 import SpaceBackground from './components/SpaceBackground';
 import { analyzePassword } from './api';
 
@@ -15,6 +17,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [view, setView] = useState('analyzer');
   const debounceRef = useRef(null);
 
   // Debounced analysis
@@ -47,6 +50,8 @@ function App() {
   }, [password]);
 
   const hasResult = result && result.score !== undefined;
+
+  if (view === 'how-it-works') return <><SpaceBackground /><HowItWorks onBack={() => setView('analyzer')} /></>;
 
   return (
     <>
@@ -174,7 +179,9 @@ function App() {
                       suggestions={result.suggestions}
                       strongerVersion={result.stronger_version}
                     />
+                    <button className="text-button" type="button" onClick={() => setView('how-it-works')}>How does this work?</button>
                   </div>
+                  <BreachCheck password={password} />
                 </motion.div>
               )}
             </AnimatePresence>

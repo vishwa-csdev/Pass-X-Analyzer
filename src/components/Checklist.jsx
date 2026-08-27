@@ -11,7 +11,7 @@ export default function Checklist({ checks }) {
   return (
     <div id="checklist-panel">
       <h2 className="tw:text-xs font-display tw:font-semibold tw:tracking-widest tw:uppercase tw:mb-4" style={{ color: 'var(--text-muted)' }}>
-        Security Checks
+        Analyzer Boot Log
       </h2>
       <div className="tw:space-y-3">
         {checks.map((check, index) => (
@@ -62,7 +62,7 @@ export default function Checklist({ checks }) {
               className="tw:text-xs font-data tw:tabular-nums tw:flex-shrink-0 tw:mt-0.5"
               style={{ color: check.passed ? 'var(--color-verified)' : 'var(--text-muted)' }}
             >
-              {check.points}/{check.max_points}
+              [{check.passed ? 'OK' : 'FAIL'}]
             </span>
           </motion.div>
         ))}

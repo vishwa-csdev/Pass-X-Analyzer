@@ -74,12 +74,13 @@ export default function PasswordInput({ value, onChange, entropyBits }) {
 
   return (
     <div className="tw:flex tw:flex-col tw:gap-1">
+      <label className="terminal-prompt" htmlFor="password-input">PASSWORD&gt; <span aria-hidden="true">▊</span></label>
       <div className="password-input-wrapper">
         <motion.input
           id="password-input"
           type={visible ? 'text' : 'password'}
           className="password-input font-data"
-          placeholder="Enter your password..."
+          placeholder="ENTER PASSWORD..."
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete="off"

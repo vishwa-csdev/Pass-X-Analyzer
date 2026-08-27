@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
  */
 export default function StrengthMeter({ score, category, active }) {
   const prefersReducedMotion = useReducedMotion();
-  const percentage = active ? Math.min(Math.max(score, 0), 100) : 0;
+  const litBlocks = active ? Math.ceil(Math.min(Math.max(score, 0), 100) / 10) : 0;
   
   // Map categories to the new design tokens
   const colorMap = {
@@ -15,11 +15,11 @@ export default function StrengthMeter({ score, category, active }) {
   };
 
   const currentColors = active ? (colorMap[category] || colorMap.Weak) : { bar: 'var(--color-vault-line)', bg: 'transparent' };
-  const displayCategory = active ? category.toUpperCase() : '---';
+  const displayCategory = active ? category.toUpperCase() : 'AWAITING SIGNAL';
   const displayScore = active ? score : '0';
 
   return (
-    <div id="strength-meter" className="tw:space-y-4">
+    <div id="strength-meter" className="tw:space-y-4 transmission-meter">
       {/* Score and Category - Hero Moment */}
       <div className="tw:flex tw:items-baseline tw:justify-between">
         <div className="tw:flex tw:items-baseline tw:gap-2">
@@ -44,16 +44,11 @@ export default function StrengthMeter({ score, category, active }) {
         </motion.span>
       </div>
 
-      {/* Progress bar */}
-      <div className="tw:h-[6px] tw:w-full tw:rounded-full tw:bg-[var(--color-vault-line)] tw:overflow-hidden">
-        <motion.div
-          className="tw:h-full tw:rounded-full"
-          animate={{ 
-            width: `${percentage}%`,
-            backgroundColor: currentColors.bar 
-          }}
-          transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 100, damping: 15 }}
-        />
+      <div className="transmission-label">TRANSMISSION INTEGRITY</div>
+      <div className="signal-blocks" aria-label={`${litBlocks} of 10 signal blocks active`}>
+        {Array.from({ length: 10 }, (_, index) => (
+          <motion.i key={index} className={index < litBlocks ? 'is-lit' : ''} animate={{ backgroundColor: index < litBlocks ? currentColors.bar : 'var(--color-vault-line)' }} transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.12, delay: index * 0.03 }} />
+        ))}
       </div>
     </div>
   );
