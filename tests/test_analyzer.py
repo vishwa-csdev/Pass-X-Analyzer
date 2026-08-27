@@ -11,7 +11,6 @@ import math
 import pytest
 
 from packages.core.analyzer import analyze
-from packages.core.breach import breach_check_for_password
 from packages.core.checks import (
     check_length,
     check_uppercase,
@@ -238,59 +237,6 @@ class TestEntropy:
         bits, _ = calculate_entropy("Aa1!")  # pool = 26+26+10+32 = 94
         expected = 4 * math.log2(94)
         assert abs(bits - round(expected, 2)) < 0.01
-
-
-class TestBreachCheck:
-    def test_breach_check_detects_compromised_password(self, monkeypatch):
-        import hashlib
-
-        password = "password"
-        digest = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
-        prefix = digest[:5]
-        suffix = digest[5:]
-
-        class FakeResponse:
-            def __init__(self, text):
-                self.text = text
-
-            def raise_for_status(self):
-                return None
-
-        def fake_get(url, params=None, timeout=None):
-            assert params["prefix"] == prefix
-            return FakeResponse(f"{suffix}:42\n")
-
-        monkeypatch.setattr("packages.core.breach.httpx.get", fake_get)
-        result = breach_check_for_password(password)
-
-        assert result["found"] is True
-        assert result["matches"] == 42
-        assert result["status"] == "breach_detected"
-
-    def test_breach_check_reports_clean_password(self, monkeypatch):
-        import hashlib
-
-        password = "AveryUniquePassword!9124?"
-        digest = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
-        prefix = digest[:5]
-
-        class FakeResponse:
-            def __init__(self, text):
-                self.text = text
-
-            def raise_for_status(self):
-                return None
-
-        def fake_get(url, params=None, timeout=None):
-            assert params["prefix"] == prefix
-            return FakeResponse("000000:0\nFFFFF:1\n")
-
-        monkeypatch.setattr("packages.core.breach.httpx.get", fake_get)
-        result = breach_check_for_password(password)
-
-        assert result["found"] is False
-        assert result["matches"] == 0
-        assert result["status"] == "no_signal"
 
     def test_entropy_bonus_low(self):
         assert entropy_score_bonus(10) == 0

@@ -22,7 +22,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from packages.core.analyzer import analyze
-from packages.core.breach import breach_check_for_password
 from packages.core.generator import generate_password
 from packages.core.models import GeneratorOptions
 
@@ -58,10 +57,6 @@ class GenerateRequest(BaseModel):
     use_digits: bool = Field(default=True)
     use_symbols: bool = Field(default=True)
     exclude_ambiguous: bool = Field(default=False)
-
-
-class BreachCheckRequest(BaseModel):
-    password: str = Field(..., description="The password to scan against known breach data")
 
 
 # ---------------------------------------------------------------------------
@@ -110,10 +105,3 @@ async def generate(req: GenerateRequest):
     gen_result.analysis = analysis
 
     return asdict(gen_result)
-
-
-@app.post("/breach-check")
-@app.post("/api/breach-check")
-async def breach_check(req: BreachCheckRequest):
-    """Check a password against the Have I Been Pwned range API."""
-    return breach_check_for_password(req.password)

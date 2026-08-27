@@ -36,13 +36,3 @@ export async function generatePassword(options = {}) {
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
-
-export async function breachCheckPassword(password) {
-  const res = await fetch(`${API_BASE}/breach-check`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password }),
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
