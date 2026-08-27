@@ -17,6 +17,7 @@ from packages.core.models import CheckResult
 # ---------------------------------------------------------------------------
 
 _COMMON_PASSWORDS: Set[str] = set()
+_INDIC_BLOCKLIST: Set[str] = set()
 
 
 def _load_common_passwords() -> Set[str]:
@@ -33,6 +34,51 @@ def _load_common_passwords() -> Set[str]:
         _COMMON_PASSWORDS = set()
 
     return _COMMON_PASSWORDS
+
+
+def _load_indic_blocklist() -> Set[str]:
+    """Load normalized, culturally salient Indic password tokens."""
+    global _INDIC_BLOCKLIST
+    if _INDIC_BLOCKLIST:
+        return _INDIC_BLOCKLIST
+
+    data_path = os.path.join(os.path.dirname(__file__), "data", "indic_blocklist.txt")
+    try:
+        with open(data_path, "r", encoding="utf-8") as f:
+            _INDIC_BLOCKLIST = {
+                re.sub(r"[^a-z0-9]", "", line.strip().lower())
+                for line in f
+                if line.strip() and not line.lstrip().startswith("#")
+            }
+    except FileNotFoundError:
+        _INDIC_BLOCKLIST = set()
+
+    return _INDIC_BLOCKLIST
+
+
+def _normalize_indic_candidate(password: str) -> str:
+    """Remove separators and fold common leetspeak for blocklist matching."""
+    normalized = password.lower().translate(str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s"}))
+    return re.sub(r"[^a-z0-9]", "", normalized)
+
+
+def _contains_indic_token(password: str) -> str | None:
+    """Return the matched Indic token, including simple digit/symbol mutations."""
+    normalized = _normalize_indic_candidate(password)
+    raw_normalized = re.sub(r"[^a-z0-9]", "", password.lower())
+
+    for token in _load_indic_blocklist():
+        if not token:
+            continue
+        if normalized == token:
+            return token
+
+        if raw_normalized.startswith(token) or raw_normalized.endswith(token):
+            remainder = raw_normalized[len(token):] if raw_normalized.startswith(token) else raw_normalized[:-len(token)]
+            if not remainder or (len(remainder) <= 4 and (remainder.isdigit() or not remainder.isalnum())):
+                return token
+
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -261,6 +307,23 @@ def check_common_password(password: str) -> CheckResult:
     )
 
 
+def check_indic_password(password: str) -> CheckResult:
+    """Reject high-salience Indic tokens and their predictable mutations."""
+    matched_token = _contains_indic_token(password)
+    return CheckResult(
+        name="indic_password",
+        label="Avoid common Indic password patterns",
+        passed=matched_token is None,
+        detail=(
+            f"Contains a high-risk Indic token or predictable mutation ({matched_token})"
+            if matched_token
+            else "No high-risk Indic token pattern detected"
+        ),
+        points=15 if matched_token is None else 0,
+        max_points=15,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Convenience: run all checks
 # ---------------------------------------------------------------------------
@@ -275,6 +338,7 @@ ALL_CHECKS = [
     check_sequential,
     check_keyboard_walks,
     check_common_password,
+    check_indic_password,
 ]
 
 

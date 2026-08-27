@@ -74,9 +74,12 @@ def analyze(password: str) -> AnalysisResult:
     if len(password) < 8:
         total_score = min(total_score, 35)
 
-    # Clamp: common/leaked passwords can never leave "Weak"
-    common_check = next((c for c in checks if c.name == "common_password"), None)
-    if common_check and not common_check.passed:
+    # Clamp: common or culturally predictable passwords can never leave "Weak"
+    has_risky_pattern = any(
+        c.name in {"common_password", "indic_password"} and not c.passed
+        for c in checks
+    )
+    if has_risky_pattern:
         total_score = min(total_score, 35)
 
     # Category

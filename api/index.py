@@ -9,19 +9,22 @@ from __future__ import annotations
 
 import sys
 import os
+import time
+from collections import defaultdict, deque
+from threading import Lock
 from dataclasses import asdict
-from typing import Optional
 
 # Ensure project root is in sys.path
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from packages.core.analyzer import analyze
+from packages.core.breach import breach_check_for_hash
 from packages.core.generator import generate_password
 from packages.core.models import GeneratorOptions
 
@@ -31,14 +34,58 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — allow Vite dev server and deployed origins
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "PASS_X_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
+
+# CORS — keep the API callable from the local frontend and configured deployments.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_rate_limit_window = 60.0
+_rate_limit_requests = 60
+_request_times: dict[str, deque[float]] = defaultdict(deque)
+_rate_limit_lock = Lock()
+
+
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    """Apply basic response hardening and a per-client API request limit."""
+    if request.url.path.rstrip("/") in {
+        "/analyze", "/api/analyze", "/generate", "/api/generate",
+        "/breach-check", "/api/breach-check",
+    }:
+        client_id = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        with _rate_limit_lock:
+            requests = _request_times[client_id]
+            while requests and now - requests[0] >= _rate_limit_window:
+                requests.popleft()
+            if len(requests) >= _rate_limit_requests:
+                raise HTTPException(status_code=429, detail="Too many requests. Try again shortly.")
+            requests.append(now)
+
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; connect-src 'self' https://api.pwnedpasswords.com; "
+        "font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "img-src 'self' data:; frame-ancestors 'none'"
+    )
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -47,7 +94,7 @@ app.add_middleware(
 
 
 class AnalyzeRequest(BaseModel):
-    password: str = Field(..., description="The password to analyze")
+    password: str = Field(..., max_length=256, description="The password to analyze")
 
 
 class GenerateRequest(BaseModel):
@@ -57,6 +104,11 @@ class GenerateRequest(BaseModel):
     use_digits: bool = Field(default=True)
     use_symbols: bool = Field(default=True)
     exclude_ambiguous: bool = Field(default=False)
+
+
+class BreachCheckRequest(BaseModel):
+    prefix: str = Field(..., min_length=5, max_length=5, description="First five characters of the SHA-1 digest")
+    suffix: str = Field(..., min_length=35, max_length=35, description="Remaining SHA-1 digest characters")
 
 
 # ---------------------------------------------------------------------------
@@ -105,3 +157,10 @@ async def generate(req: GenerateRequest):
     gen_result.analysis = analysis
 
     return asdict(gen_result)
+
+
+@app.post("/breach-check")
+@app.post("/api/breach-check")
+async def breach_check(req: BreachCheckRequest):
+    """Check a k-anonymous SHA-1 query without accepting a raw password."""
+    return breach_check_for_hash(req.prefix, req.suffix)

@@ -24,6 +24,7 @@ _SUGGESTION_MAP = {
     "sequential": "Avoid sequential characters like 'abc', '123', or 'cba'.",
     "keyboard_walk": "Avoid keyboard patterns like 'qwerty', 'asdf', or 'zxcv'.",
     "common_password": "This password is too common — choose something more unique and personal.",
+    "indic_password": "Avoid well-known Indic names, religious terms, places, sports figures, and predictable digit or symbol variants.",
 }
 
 
